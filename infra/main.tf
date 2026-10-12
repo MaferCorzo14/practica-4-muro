@@ -50,6 +50,7 @@ resource "google_cloud_run_v2_service" "backend" {
 
   template {
     service_account = google_service_account.backend.email
+    max_instance_request_concurrency = 5
     containers {
       image = var.imagen_backend
       env {
@@ -59,7 +60,6 @@ resource "google_cloud_run_v2_service" "backend" {
     }
     scaling {
       max_instance_count = 3
-      max_instance_request_concurrency = 5
     }
   }
 }
