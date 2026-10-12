@@ -1,5 +1,6 @@
 # API para el muro de mensajes: listar y publicar, guardando en Firestore.
 import os, uuid
+import re
 from flask import Flask, request, jsonify
 from google.cloud import firestore
 
@@ -66,17 +67,44 @@ def crear():
 def reaccionar(mensaje_id):
     datos = request.get_json(silent=True)
     if not isinstance(datos, dict):
-        return jsonify(error="se requiere una reaccion"), 400
+        return jsonify(error="se requiere una reaccion y un id de navegador"), 400
 
     reaccion = datos.get("reaccion")
     if not isinstance(reaccion, str) or reaccion not in {"me_gusta", "corazon", "risa"}:
         return jsonify(error="reaccion no valida"), 400
 
-    referencia = db.collection("mensajes").document(mensaje_id)
-    if not referencia.get().exists:
+    visitante_id = datos.get("visitante_id")
+    if not isinstance(visitante_id, str) or not re.fullmatch(r"[0-9a-f]{32}", visitante_id):
+        return jsonify(error="id de navegador no valido"), 400
+
+    mensaje_ref = db.collection("mensajes").document(mensaje_id)
+    voto_ref = mensaje_ref.collection("votos").document(visitante_id)
+    transaction = db.transaction()
+
+    @firestore.transactional
+    def actualizar_voto(tx):
+        mensaje = tx.get(mensaje_ref)
+        voto = tx.get(voto_ref)
+        if not mensaje.exists:
+            return "no_encontrado"
+
+        reaccion_anterior = voto.get("reaccion") if voto.exists else None
+        cambios = {}
+        if reaccion_anterior == reaccion:
+            cambios[f"reacciones.{reaccion}"] = firestore.Increment(-1)
+            tx.delete(voto_ref)
+            accion = "quitada"
+        else:
+            if reaccion_anterior in {"me_gusta", "corazon", "risa"}:
+                cambios[f"reacciones.{reaccion_anterior}"] = firestore.Increment(-1)
+            cambios[f"reacciones.{reaccion}"] = firestore.Increment(1)
+            tx.set(voto_ref, {"reaccion": reaccion})
+            accion = "agregada" if reaccion_anterior is None else "cambiada"
+        tx.update(mensaje_ref, cambios)
+        return accion
+
+    accion = actualizar_voto(transaction)
+    if accion == "no_encontrado":
         return jsonify(error="mensaje no encontrado"), 404
 
-    referencia.update({
-        f"reacciones.{reaccion}": firestore.Increment(1),
-    })
-    return jsonify(ok=True, instancia=INSTANCIA), 200
+    return jsonify(ok=True, accion=accion, instancia=INSTANCIA), 200

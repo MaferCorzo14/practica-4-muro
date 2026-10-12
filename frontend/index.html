@@ -110,6 +110,12 @@
 </main>
 <script>
 const API = "__BACKEND_URL__";
+const CLAVE_VISITANTE = "muro_visitante_id";
+let visitanteId = localStorage.getItem(CLAVE_VISITANTE);
+if (!visitanteId) {
+  visitanteId = crypto.randomUUID().replaceAll("-", "");
+  localStorage.setItem(CLAVE_VISITANTE, visitanteId);
+}
 const COLORES = ["#c8102e", "#1f6feb", "#2e7d32", "#8e44ad", "#d35400", "#00838f"];
 
 function colorDe(nombre) {
@@ -172,7 +178,7 @@ async function reaccionar(mensajeId, tipo, boton) {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reaccion: tipo })
+        body: JSON.stringify({ reaccion: tipo, visitante_id: visitanteId })
       }
     );
     if (!respuesta.ok) {
