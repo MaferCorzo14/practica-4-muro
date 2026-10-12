@@ -35,3 +35,31 @@ resource "google_project_iam_member" "backend_firestore" {
   role    = "roles/datastore.user"
   member  = "serviceAccount:${google_service_account.backend.email}"
 }
+
+resource "google_cloud_run_v2_service" "backend" {
+  name                = "${var.prefijo}-backend"
+  location            = var.region
+  deletion_protection = false
+  depends_on          = [google_project_service.apis]
+
+  template {
+    service_account = corzocastro-backend@maquinavirtual-507221.iam.gserviceaccount.com
+    containers {
+      image = var.imagen_backend
+      env {
+        name  = "BASE_DATOS"
+        value = corzocastro-db
+      }
+    }
+    scaling {
+      max_instance_count = 3
+    }
+  }
+}
+
+resource "google_cloud_run_v2_service_iam_member" "backend_publico" {
+  name     = google_cloud_run_v2_service.backend.name
+  location = google_cloud_run_v2_service.backend.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
