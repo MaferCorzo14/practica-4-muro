@@ -1,6 +1,6 @@
 # Copia este archivo como terraform.tfvars y pon tus valores.
 proyecto        = "maquinavirtual-507221"
 prefijo         = "corzocastro"
-imagen_backend  = "us-central1-docker.pkg.dev/maquinavirtual-507221/corzocastro-imagenes/backend:v6"
-imagen_frontend = "us-central1-docker.pkg.dev/maquinavirtual-507221/corzocastro-imagenes/frontend:v5"
+imagen_backend  = "us-central1-docker.pkg.dev/maquinavirtual-507221/corzocastro-imagenes/backend:v7"
+imagen_frontend = "us-central1-docker.pkg.dev/maquinavirtual-507221/corzocastro-imagenes/frontend:v6"
 origen_frontend = "https://corzocastro-frontend-26byw3byzq-uc.a.run.app"
