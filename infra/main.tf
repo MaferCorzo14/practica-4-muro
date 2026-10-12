@@ -43,12 +43,12 @@ resource "google_cloud_run_v2_service" "backend" {
   depends_on          = [google_project_service.apis]
 
   template {
-    service_account = corzocastro-backend@maquinavirtual-507221.iam.gserviceaccount.com
+    service_account = google_service_account.backend.email
     containers {
       image = var.imagen_backend
       env {
         name  = "BASE_DATOS"
-        value = corzocastro-db
+        value = google_firestore_database.db.name
       }
     }
     scaling {
