@@ -26,18 +26,19 @@ def listar():
     consulta = (db.collection("mensajes")
                   .order_by("creado", direction=firestore.Query.DESCENDING)
                   .limit(20))
-    mensajes = [
-        {
-            "id": d.id,
-            "autor": d.get("autor"),
-            "texto": d.get("texto"),
+    mensajes = []
+    for documento in consulta.stream():
+        datos = documento.to_dict()
+        reacciones = datos.get("reacciones") or {}
+        mensajes.append({
+            "id": documento.id,
+            "autor": datos.get("autor"),
+            "texto": datos.get("texto"),
             "reacciones": {
-                tipo: (d.get("reacciones") or {}).get(tipo, 0)
+                tipo: reacciones.get(tipo, 0)
                 for tipo in ("me_gusta", "corazon", "risa")
             },
-        }
-        for d in consulta.stream()
-    ]
+        })
     return jsonify(instancia=INSTANCIA, mensajes=mensajes)
 
 
