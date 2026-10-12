@@ -83,8 +83,8 @@ def reaccionar(mensaje_id):
 
     @firestore.transactional
     def actualizar_voto(tx):
-        mensaje = tx.get(mensaje_ref)
-        voto = tx.get(voto_ref)
+        mensaje = next(tx.get(mensaje_ref))
+        voto = next(tx.get(voto_ref))
         if not mensaje.exists:
             return "no_encontrado"
 
