@@ -2,9 +2,9 @@
 
 ## 1. Identificación
 
-**Equipo:** Maria Fernanda Corzo Castro.
+**Equipo:** Grupo 6.
 
-**Otros integrantes:** completar si corresponde.
+**Integrantes:** Alison Brigitte Martinez Machado - 1152299 Maria Fernanda Corzo Castro - 1152300 Juan Camilo Uribe Mendoza - 1152326.
 
 **Proyecto de Google Cloud:** `maquinavirtual-507221`.
 
@@ -34,18 +34,18 @@ flowchart LR
   navegador -->|"GET/POST /mensajes y reacciones"| backend
   backend -->|"consulta y actualiza"| firestore
 
-  terraform -. "var.imagen_frontend" .-> ar
-  terraform -. "var.imagen_backend" .-> ar
-  ar -->|"imagen frontend"| frontend
-  ar -->|"imagen backend"| backend
-  sa_front -. "template.service_account"| frontend
-  sa_back -. "template.service_account"| backend
-  sa_back -. "google_project_iam_member.backend_firestore"| firestore
-  terraform -. "BACKEND_URL = backend.uri"| frontend
-  terraform -. "BASE_DATOS = db.name"| backend
-  terraform -. "ORIGEN_PERMITIDO = var.origen_frontend"| backend
-  terraform -. "depends_on: APIs y Artifact Registry"| frontend
-  terraform -. "depends_on: APIs y Artifact Registry"| backend
+  terraform -.->|var.imagen_frontend| ar
+  terraform -.->|var.imagen_backend| ar
+  ar -->|imagen frontend| frontend
+  ar -->|imagen backend| backend
+  sa_front -.->|template.service_account| frontend
+  sa_back -.->|template.service_account| backend
+  sa_back -.->|google_project_iam_member.backend_firestore| firestore
+  terraform -.->|BACKEND_URL = backend.uri| frontend
+  terraform -.->|BASE_DATOS = db.name| backend
+  terraform -.->|ORIGEN_PERMITIDO = var.origen_frontend| backend
+  terraform -.->|depends_on: APIs y Artifact Registry| frontend
+  terraform -.->|depends_on: APIs y Artifact Registry| backend
 ```
 
 Terraform pasa la URI del backend al frontend mediante `google_cloud_run_v2_service.backend.uri`. El origen permitido del backend se configura con `var.origen_frontend`, cuyo valor es la URL del frontend. Es una cadena de entrada y no una referencia Terraform al recurso frontend; así se evita el ciclo frontend → backend → frontend. Las cuentas de servicio se conectan a sus servicios mediante `template.service_account`; solo la cuenta del backend recibe `roles/datastore.user`.
@@ -56,45 +56,66 @@ Las capturas existentes están guardadas en `evidencias/`. La fase de preparaci�
 
 ### Fase 0. Preparación
 
-- Versiones de Terraform: [terraform-version.png](./evidencias/preparacion/terraform-version.png)
-- Versión de Docker: [docker-version.png](./evidencias/preparacion/docker-version.png)
-- Configuración activa de `gcloud`: [config-list.png](./evidencias/preparacion/config-list.png)
+- Versiones de Terraform:
+  ![Versión de Terraform](./evidencias/preparacion/terraform-version.png)
+- Versión de Docker:
+  ![Versión de Docker](./evidencias/preparacion/docker-version.png)
+- Configuración activa de `gcloud`:
+  ![Configuración de gcloud](./evidencias/preparacion/config-list.png)
 
 ### Fase 1. Las imágenes
 
-- Caché de capas reutilizada al reconstruir: [capas-reutilizadas.png](./evidencias/imagenes/capas-reutilizadas.png)
-- Prueba de frontend con el backend desconectado: [backend-desconectado.png](./evidencias/imagenes/backend-desconectado.png)
+- Caché de capas reutilizada al reconstruir:
+  ![Capas reutilizadas](./evidencias/imagenes/capas-reutilizadas.png)
+- Prueba de frontend con el backend desconectado:
+  ![Frontend con backend desconectado](./evidencias/imagenes/backend-desconectado.png)
 
 ### Fase 2. Los cimientos
 
-- Repositorio de imágenes en Artifact Registry: [artifact-registry.png](./evidencias/cimientos/artifact-registry.png)
-- Base de Firestore: [firestore.png](./evidencias/cimientos/firestore.png)
-- Identidad y permisos: [identidad.png](./evidencias/cimientos/identidad.png)
+- Repositorio de imágenes en Artifact Registry:
+  ![Artifact Registry](./evidencias/cimientos/artifact-registry.png)
+- Base de Firestore:
+  ![Firestore](./evidencias/cimientos/firestore.png)
+- Identidad y permisos:
+  ![Identidad y permisos](./evidencias/cimientos/identidad.png)
 
 ### Fase 3. El backend
 
-- Publicación de un mensaje mediante la API: [post-mensaje.png](./evidencias/backend/post-mensaje.png)
-- Respuesta de listado de mensajes: [mensaje.png](./evidencias/backend/mensaje.png)
-- Documento persistido en Firestore: [documento.png](./evidencias/backend/documento.png)
+- Publicación de un mensaje mediante la API:
+  ![Publicación de mensaje](./evidencias/backend/post-mensaje.png)
+- Respuesta de listado de mensajes:
+  ![Listado de mensajes](./evidencias/backend/mensaje.png)
+- Documento persistido en Firestore:
+  ![Documento en Firestore](./evidencias/backend/documento.png)
 
 ### Fase 4. El frontend, conectado
 
-- Muro publicado en Cloud Run: [muro.jpeg](./evidencias/frontend/muro.jpeg)
+- Muro publicado en Cloud Run:
+  ![Muro publicado](./evidencias/frontend/muro.jpeg)
 
 ### Fase 5. El estado vive afuera
 
-- Respuestas de distintas instancias durante las solicitudes: [instancias.jpeg](./evidencias/estado/instancias.jpeg)
-- Resumen de carga de `hey`: [hey.png](./evidencias/estado/hey.png)
-- Métrica de instancias del backend: [grafica-instancias.png](./evidencias/estado/grafica-instancias.png)
+- Respuestas de distintas instancias durante las solicitudes:
+  ![Respuestas de instancias](./evidencias/estado/instancias.jpeg)
+- Resumen de carga de `hey`:
+  ![Prueba de carga hey](./evidencias/estado/hey.png)
+- Métrica de instancias del backend:
+  ![Métrica de instancias](./evidencias/estado/grafica-instancias.png)
 
 ### Fase 6. Reto: hacerlo tuyo
 
-- Reacciones en el muro: [funcionalidad-muro.jpeg](./evidencias/reto/funcionalidad-muro.jpeg)
-- Error CORS al usar otro origen: [CORS-error.png](./evidencias/reto/CORS-error.png)
-- Comparación de lecturas/refresco: [lectura.png](./evidencias/reto/lectura.png)
-- Destrucción para la reconstrucción desde cero: [destroy.png](./evidencias/reto/destroy.png)
-- Error encontrado durante la reconstrucción: [error500.png](./evidencias/reto/error500.png)
-- API operativa después de corregir y reconstruir: [solucionado200.png](./evidencias/reto/solucionado200.png)
+- Reacciones en el muro:
+  ![Reacciones del muro](./evidencias/reto/funcionalidad-muro.jpeg)
+- Error CORS al usar otro origen:
+  ![Error CORS](./evidencias/reto/CORS-error.png)
+- Comparación de lecturas/refresco:
+  ![Comparación de lecturas](./evidencias/reto/lectura.png)
+- Destrucción para la reconstrucción desde cero:
+  ![Terraform destroy](./evidencias/reto/destroy.png)
+- Error encontrado durante la reconstrucción:
+  ![Error 500 durante la reconstrucción](./evidencias/reto/error500.png)
+- API operativa después de corregir y reconstruir:
+  ![API respondió 200](./evidencias/reto/solucionado200.png)
 
 Antes de la revisión, confirmar que las capturas de `lectura.png` muestren la comparación anterior/después y que la URL pública siga funcionando. Una captura de `destroy.png` documenta la destrucción, pero la evidencia de reconstrucción completa debe mostrar también el `apply` exitoso y el servicio funcionando.
 
