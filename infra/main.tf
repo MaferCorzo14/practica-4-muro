@@ -46,7 +46,10 @@ resource "google_cloud_run_v2_service" "backend" {
   name                = "${var.prefijo}-backend"
   location            = var.region
   deletion_protection = false
-  depends_on          = [google_project_service.apis]
+  depends_on = [
+    google_project_service.apis,
+    google_artifact_registry_repository.imagenes,
+  ]
 
   template {
     service_account = google_service_account.backend.email
@@ -71,7 +74,10 @@ resource "google_cloud_run_v2_service" "frontend" {
   name                = "${var.prefijo}-frontend"
   location            = var.region
   deletion_protection = false
-  depends_on          = [google_project_service.apis]
+  depends_on = [
+    google_project_service.apis,
+    google_artifact_registry_repository.imagenes,
+  ]
 
   template {
     service_account = google_service_account.frontend.email
