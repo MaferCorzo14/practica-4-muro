@@ -80,6 +80,16 @@
   }
   .autor { font-weight: 650; margin-bottom: .15rem; }
   .cuerpo { line-height: 1.4; overflow-wrap: anywhere; }
+  .contenido { flex: 1; min-width: 0; }
+  .reacciones { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .65rem; }
+  button.reaccion {
+    width: auto;
+    padding: .35rem .55rem;
+    border: 1px solid var(--borde);
+    background: #fbfaf9;
+    color: var(--texto);
+    font-size: .9rem;
+  }
 </style>
 </head>
 <body>
@@ -121,19 +131,58 @@ async function cargar() {
       inicial.textContent = (m.autor[0] || "?").toUpperCase();
       inicial.style.background = colorDe(m.autor);
       const contenido = document.createElement("div");
+      contenido.className = "contenido";
       const autor = document.createElement("div");
       autor.className = "autor";
       autor.textContent = m.autor;
       const cuerpo = document.createElement("div");
       cuerpo.className = "cuerpo";
       cuerpo.textContent = m.texto;
-      contenido.append(autor, cuerpo);
+      const reacciones = document.createElement("div");
+      reacciones.className = "reacciones";
+      const opciones = [
+        ["me_gusta", "👍"],
+        ["corazon", "❤️"],
+        ["risa", "😂"],
+      ];
+      for (const [tipo, emoji] of opciones) {
+        const boton = document.createElement("button");
+        boton.className = "reaccion";
+        boton.type = "button";
+        boton.textContent = `${emoji} ${m.reacciones[tipo]}`;
+        boton.setAttribute("aria-label", `Agregar reaccion ${tipo}`);
+        boton.onclick = () => reaccionar(m.id, tipo, boton);
+        reacciones.append(boton);
+      }
+      contenido.append(autor, cuerpo, reacciones);
       li.append(inicial, contenido);
       lista.append(li);
     }
     document.getElementById("estado").textContent = "Respondió la instancia " + datos.instancia;
   } catch (error) {
     document.getElementById("estado").textContent = "No se pudo hablar con el backend: " + error;
+  }
+}
+
+async function reaccionar(mensajeId, tipo, boton) {
+  boton.disabled = true;
+  try {
+    const respuesta = await fetch(
+      `${API}/mensajes/${encodeURIComponent(mensajeId)}/reacciones`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reaccion: tipo })
+      }
+    );
+    if (!respuesta.ok) {
+      throw new Error(`El backend respondio ${respuesta.status}`);
+    }
+    await cargar();
+  } catch (error) {
+    document.getElementById("estado").textContent = "No se pudo guardar la reaccion: " + error;
+  } finally {
+    boton.disabled = false;
   }
 }
 
