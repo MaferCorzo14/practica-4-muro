@@ -27,3 +27,8 @@ variable "imagen_frontend" {
   type        = string
   description = "Ruta completa de la imagen del frontend, con etiqueta"
 }
+
+variable "origen_frontend" {
+  type        = string
+  description = "Origen autorizado para hacer peticiones al backend"
+}

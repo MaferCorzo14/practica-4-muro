@@ -56,6 +56,10 @@ resource "google_cloud_run_v2_service" "backend" {
         name  = "BASE_DATOS"
         value = google_firestore_database.db.name
       }
+      env {
+        name  = "ORIGEN_PERMITIDO"
+        value = var.origen_frontend
+      }
     }
     scaling {
       max_instance_count = 3
